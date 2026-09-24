@@ -98,6 +98,6 @@ tasks.register("runClient", JavaExec.class) {
 tasks.register("runService", JavaExec.class) {
     mainClass = 'pl.olafcio.tedge.service.TedgeService'
 
-    args(project.minecraft)
+    args(project.minecrafts.split(", "))
     classpath(sourceSets.main.runtimeClasspath)
 }

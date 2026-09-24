@@ -13,12 +13,17 @@ import java.util.ArrayList;
 @NullMarked
 public class TedgeService extends Main {
     public static void main(String[] args) throws IOException {
-        new TedgeService().commandLine(args);
+        for (var mcversion : args) {
+            new TedgeService().commandLine(new String[]{ mcversion });
 
-        Files.writeString(
-                Path.of("library_overrides.json"),
-                new Gson().toJson(UpdatingMavenController.LIBRARIES)
-        );
+            Files.createDirectories(Path.of("library_overrides"));
+            Files.writeString(
+                    Path.of("library_overrides/" + mcversion + ".json"),
+                    new Gson().toJson(UpdatingMavenController.LIBRARIES)
+            );
+
+            UpdatingMavenController.LIBRARIES.clear();
+        }
     }
 
     @Override

@@ -41,7 +41,7 @@ jobs:
       - name: Commit library overrides
         run: |
           echo "[$(date +%H:%M:%S)] Updating website"
-          git add library_overrides.json
+          git add library_overrides
 
       - name: Push changes to remote
         run: |
