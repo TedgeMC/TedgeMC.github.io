@@ -2,7 +2,6 @@ import java.nio.file.Files
 
 plugins {
     id 'java'
-    id 'application'
 }
 
 group = 'pl.olafcio.tedge_service'
@@ -87,13 +86,18 @@ java {
     toolchain.languageVersion = JavaLanguageVersion.of(25)
 }
 
-application {
+tasks.register("runClient", JavaExec.class) {
     mainClass = 'pl.olafcio.tedge.Main'
-    applicationDefaultJvmArgs << "-javaagent:\"${projectDir.toPath().toString()}/libs/TedgeMC-${project.tedge}.jar\""
-    executableDir = "run"
+    workingDir = rootProject.file("run")
+
+    jvmArgs("-javaagent:\"${projectDir.toPath().toString()}/libs/TedgeMC-${project.tedge}.jar\"")
+    args('--accessToken="x"', "--version=\"${project.minecraft}\"")
+    classpath(sourceSets.main.runtimeClasspath)
 }
 
-if (gradle.startParameter.taskNames.contains("run"))
-    tasks.withType(JavaExec.class).configureEach {
-        args = ['--accessToken="x"', "--version=\"${project.minecraft}\""]
-    }
+tasks.register("runService", JavaExec.class) {
+    mainClass = 'pl.olafcio.tedge.service.TedgeService'
+
+    args(project.minecraft)
+    classpath(sourceSets.main.runtimeClasspath)
+}
