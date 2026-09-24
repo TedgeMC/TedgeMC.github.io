@@ -1,0 +1,99 @@
+import java.nio.file.Files
+
+plugins {
+    id 'java'
+    id 'application'
+}
+
+group = 'pl.olafcio.tedge_service'
+version = rootProject.version
+
+repositories {
+    mavenCentral()
+}
+
+var urlDependencies = new String[]{
+        "https://github.com/TedgeMC/Tedge/releases/download/${project.tedge}/TedgeMC-${project.tedge}.jar",
+        "https://github.com/TedgeMC/Tedge/releases/download/${project.tedge}/src-launcher-${project.tedge}.jar",
+        "https://github.com/TedgeMC/Tedge/releases/download/${project.tedge}/src-jargen-${project.tedge}.jar"
+}
+
+var libsFolder = projectDir.toPath().resolve("libs")
+if (!Files.exists(libsFolder)) {
+    Files.createDirectory(libsFolder)
+
+    for (var raw : urlDependencies) {
+        var url = URI.create(raw).toURL()
+        var conn = url.openConnection()
+
+        conn.setDoInput(true)
+        conn.connect()
+
+        try (var stream = conn.getInputStream()) {
+            var jar = stream.readAllBytes()
+
+            Files.write(libsFolder.resolve(raw.split("/")[-1]), jar)
+        }
+    }
+}
+
+dependencies {
+    testImplementation platform('org.junit:junit-bom:5.10.0')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+    runtimeOnly files(java.nio.file.Path.of("${System.getenv("USERPROFILE")}/.gradle/caches/Tedge-ML/${project.minecraft}/client-only-transformed.jar"))
+    runtimeOnly files(java.nio.file.Path.of("${System.getenv("USERPROFILE")}/.gradle/caches/Tedge-ML/${project.minecraft}/server-only-transformed.jar"))
+    runtimeOnly files(java.nio.file.Path.of("${System.getenv("USERPROFILE")}/.gradle/caches/Tedge-ML/${project.minecraft}/shared-transformed.jar"))
+
+    var cpf = java.nio.file.Path.of("${System.getenv("USERPROFILE")}/.gradle/caches/Tedge-ML/${project.minecraft}/classpath.txt")
+    if (Files.exists(cpf))
+        Files.readString(cpf).substring(4).split(";").each {
+            runtimeOnly files(java.nio.file.Path.of(it))
+        }
+
+    implementation files(rootProject.fileTree("libs"))
+
+    implementation 'com.google.code.gson:gson:2.8.9'
+    implementation 'tools.jackson.core:jackson-core:3.2.1'
+    implementation 'tools.jackson.core:jackson-databind:3.2.1'
+    implementation 'org.jspecify:jspecify:1.0.0'
+    implementation 'org.ow2.asm:asm:9.10.1'
+    implementation 'org.ow2.asm:asm-tree:9.10.1'
+    implementation 'org.yaml:snakeyaml:2.2'
+}
+
+test {
+    useJUnitPlatform()
+}
+
+jar {
+    manifest {
+        attributes("Main-Class": "pl.olafcio.tedge.service.TedgeService")
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    // ensure that the encoding is set to UTF-8, no matter what the system default is
+    // this fixes some edge cases with special characters not displaying correctly
+    // see http://yodaconditions.net/blog/fix-for-java-file-encoding-problems-with-gradle.html
+    // If Javadoc is generated, this must be specified in that task too.
+
+    it.options.encoding = "UTF-8"
+    it.options.release.set(25)
+}
+
+java {
+    toolchain.languageVersion = JavaLanguageVersion.of(25)
+}
+
+application {
+    mainClass = 'pl.olafcio.tedge.Main'
+    applicationDefaultJvmArgs << "-javaagent:\"${projectDir.toPath().toString()}/libs/TedgeMC-${project.tedge}.jar\""
+    executableDir = "run"
+}
+
+if (gradle.startParameter.taskNames.contains("run"))
+    tasks.withType(JavaExec.class).configureEach {
+        args = ['--accessToken="x"', "--version=\"${project.minecraft}\""]
+    }
