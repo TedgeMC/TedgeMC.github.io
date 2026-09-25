@@ -31,12 +31,22 @@ jobs:
       - name: Build with Gradle Wrapper
         run: "chmod u+x gradlew; ./gradlew runService"
 
+      - name: Reset local website
+        run: |
+          git branch -D website
+        continue-on-error: true
+
       - name: Checkout website
         run: |
-          git -c protocol.version=2 fetch --no-tags --no-recurse-submodules --depth=1 origin +refs/heads/website:refs/remotes/origin/website
+          git -c protocol.version=2 fetch --prune --no-tags --no-recurse-submodules origin +refs/heads/website:refs/remotes/origin/website
           rm gradlew -f
           rm gradlew.bat -f
+          mv library_overrides library_overrides_bk
           git checkout --progress -B website refs/remotes/origin/website
+          echo ""
+          echo "[$(date +%H:%M:%S)] Overriding overrides"
+          rm -rfv library_overrides
+          mv library_overrides_bk library_overrides
 
       - name: Commit library overrides
         run: |
@@ -57,4 +67,4 @@ jobs:
               git commit -m "Update libraries"
           fi
 
-          git push
+          git push --force-with-lease
