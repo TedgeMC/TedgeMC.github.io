@@ -68,7 +68,7 @@ tasks.register("runClient", JavaExec.class) {
     mainClass = 'pl.olafcio.tedge.Main'
     workingDir = rootProject.file("run")
 
-    jvmArgs("-javaagent:\"${projectDir.toPath().toString()}/libs/TedgeMC-${project.tedge}.jar\"")
+    jvmArgs("-javaagent:\"${projectDir.toPath().toString()}/.gradle/gradle-github-plugin/TedgeMC-${project.tedge}.jar\"")
     args('--accessToken="x"', "--version=\"${project.minecraft}\"")
     classpath(sourceSets.main.runtimeClasspath)
 }
