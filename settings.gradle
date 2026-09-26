@@ -1,1 +1,9 @@
+pluginManagement {
+    repositories {
+        flatDir {
+            dir "libs-all"
+        }
+    }
+}
+
 rootProject.name = 'TedgeMC.github.io'
