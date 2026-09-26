@@ -13,7 +13,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.regex.Pattern;
 
 public final class UpdatingMavenController extends MavenController {
-    public static final ArrayList<String> LIBRARIES
+    public static final ArrayList<JsonObject> LIBRARIES
                   = new ArrayList<>();
 
     @Override
@@ -57,8 +57,8 @@ public final class UpdatingMavenController extends MavenController {
 
             artifact.addProperty("path", path);
             artifact.addProperty("url", "https://maven-central-eu.storage-download.googleapis.com/maven2/" + path);
-
-            LIBRARIES.add(verobj.get("name").getAsString());
         }
+
+        LIBRARIES.add(verobj);
     }
 }
